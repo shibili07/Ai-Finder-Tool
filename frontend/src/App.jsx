@@ -1,13 +1,9 @@
-import { useState } from 'react'
+import React from 'react'
 
-
-
-function App() {
-
+export default function App() {
   return (
-    <>
-    </>
+    <div className='bg-amber-200'>
+      hello
+    </div>
   )
 }
-
-export default App
