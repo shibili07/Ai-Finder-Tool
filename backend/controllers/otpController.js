@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 import crypto from "crypto";
-import {sentOptMail} from "../helper/mailer.js"
+import {sendOtpMail} from "../helper/mailer.js"
 const redis = new Redis(process.env.REDIS_URL)
 
 
@@ -18,7 +18,7 @@ export const sendOtp = async (req, res) => {
     await redis.set(`otp:${email}`, otpHash, "EX", 300);
 
     // Send OTP via email
-    await sentOptMail(email, otp);
+    await sendOtpMail(email, otp);
 
     res.json({ message: "OTP sent to email" });
   } catch (err) {

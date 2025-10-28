@@ -1,8 +1,10 @@
 import { GalleryVerticalEnd } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import botImage from "../assets/botImg.png";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import axios from 'axios'
 import {
   Field,
   FieldDescription,
@@ -11,8 +13,12 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-
+import { Link } from "react-router-dom";
 export function SignupForm({ className, ...props }) {
+  const [loading, setLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState("");
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -25,36 +31,34 @@ export function SignupForm({ className, ...props }) {
   };
 
    const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log(formData)
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
-      return;
+  e.preventDefault();
+  setLoading(true);
+  setStatusMsg("Sending OTP to your email...");
+
+  try {
+    // send OTP request via axios
+    const res = await axios.post(
+      "http://localhost:5000/api/otp/sentOtp",
+      formData,
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    // handle success
+    if (res.status === 200) {
+      setStatusMsg("OTP has been sent to your email!");
+      setTimeout(() => navigate("/verifyOtp"), 1000);
+    } else {
+      setStatusMsg(res.data?.message || "Signup failed!");
     }
-
-
-
-    try {
-      const res = await fetch("http://localhost:5000/api/otp/sentOtp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("Signup successful!");
-        console.log("User:", data);
-      } else {
-        alert(data.message || "Signup failed!");
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      alert("Server error. Check console for details.");
-    }
-  };
-
+  } catch (err) {
+    console.error("Error:", err);
+    setStatusMsg(
+      err.response?.data?.message || " Server error. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -72,7 +76,7 @@ export function SignupForm({ className, ...props }) {
             </a>
             <h1 className="text-xl font-bold">Welcome to AI verse.</h1>
             <FieldDescription>
-              Already have an account? <a href="#">Sign in</a>
+              Already have an account? <Link to="/login">Sign in</Link>
             </FieldDescription>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,7 +109,7 @@ export function SignupForm({ className, ...props }) {
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder=""
                 value={formData.password}
                 onChange={handleChange}
                 required
@@ -117,7 +121,7 @@ export function SignupForm({ className, ...props }) {
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="••••••••"
+                placeholder=""
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
@@ -125,8 +129,17 @@ export function SignupForm({ className, ...props }) {
             </Field>
 
             <Field>
-              <Button type="submit">Create Account</Button>
+               <Button
+          type="submit"
+          disabled={loading}
+          
+        >
+           Create Account
+        </Button>
             </Field>
+            {statusMsg && (
+        <p className="mt-4 text-sm text-gray-700 animate-pulse">{statusMsg}</p>
+      )}
           </form>
 
           <FieldSeparator>Or</FieldSeparator>

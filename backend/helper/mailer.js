@@ -1,20 +1,30 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
-export const transporter = nodemailer.createTransport({
-     service: "gmail", // or "outlook", "yahoo" etc.
-     host:"smtp.gmail.com",
-     secure:true,
-     auth: {
-       user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-     },
-})
 
-export const sentOptMail = async (to, otp)=>{
-    await transporter.sendMail({
-         from: `"Auth System" <${process.env.EMAIL_USER}>`,
+dotenv.config();
+
+const EMAIL_USER = process.env.EMAIL_USER 
+const EMAIL_PASS = process.env.EMAIL_PASS 
+
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
+  }
+});
+
+export const sendOtpMail = async (to, otp) => {
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    throw new Error('Email credentials are not configured. Cannot send mail.');
+  }
+
+  await transporter.sendMail({
+    from: `"Auth System" <${EMAIL_USER}>`,
     to,
     subject: "Your OTP Code",
     text: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
-    })
-}
+  });
+};

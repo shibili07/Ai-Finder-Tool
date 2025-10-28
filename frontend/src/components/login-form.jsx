@@ -9,7 +9,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-
+import {Link} from 'react-router-dom'
 export function LoginForm({   
   className,
   ...props
@@ -30,7 +30,7 @@ export function LoginForm({
             </a>
             <h1 className="text-xl font-bold">Welcome to AI verse.</h1>
             <FieldDescription>
-              Don&apos;t have an account? <a href="#">Sign up</a>
+              Don&apos;t have an account? <Link to="/signup">Sign up</Link>
             </FieldDescription>
           </div>
           <Field>
