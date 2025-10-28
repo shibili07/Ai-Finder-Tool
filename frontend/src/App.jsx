@@ -1,9 +1,10 @@
 import React from 'react'
-
+import Login from "./pages/Login.jsx"
+import Signup from './pages/Signup.jsx'
 export default function App() {
   return (
-    <div className='bg-amber-200'>
-      hello
-    </div>
+     <>
+     <Signup/>
+     </>
   )
 }
