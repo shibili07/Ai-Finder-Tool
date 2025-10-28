@@ -40,6 +40,7 @@ export function OTPForm({ className, ...props }) {
       if (res.status === 200) {
         setStatusMsg("OTP verified successfully!");
         localStorage.removeItem("pendingEmail");
+        localStorage.setItem("token", res.data.token);
         setTimeout(() => navigate("/login"), 1500);
       } else {
         setStatusMsg(res.data?.message || "Invalid OTP!");
@@ -111,7 +112,7 @@ export function OTPForm({ className, ...props }) {
          {statusMsg && (
         <p
           className={`text-sm text-center ${
-            statusMsg.includes("✅") ? "text-green-600" : "text-red-500"
+            statusMsg.includes("successfully") ? "text-green-600" : "text-red-500"
           } animate-pulse`}
         >
           {statusMsg}

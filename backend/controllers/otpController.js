@@ -1,6 +1,9 @@
 import Redis from "ioredis";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import {sendOtpMail} from "../helper/mailer.js"
+import User from "../models/User.js"
+import jwt from "jsonwebtoken";
 const redis = new Redis(process.env.REDIS_URL)
 
 
@@ -9,6 +12,8 @@ export const sendOtp = async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password)
       return res.status(400).json({ error: "All fields are required" });
+    
+    console.log(req.body)
 
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -29,21 +34,22 @@ export const sendOtp = async (req, res) => {
       otpHash,
     });
 
-    await redis.set(`verify:${otpHash}`, payload, "EX", 300); // 5 min
+    // store by email, expires in 5 min
+    await redis.set(`verify:${email}`, payload, "EX", 300);
 
     // Send email
     await sendOtpMail(email, otp);
 
-    res.json({
-    message: "OTP sent successfully",
-    email, // send the email back to frontend
+    res.status(200).json({
+      message: "OTP sent successfully",
+      email, // return for frontend use
     });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to send OTP" });
   }
 };
+
 
 export const verifyOtp = async (req, res) => {
   try {
@@ -70,10 +76,20 @@ export const verifyOtp = async (req, res) => {
       password: userData.password,
     });
 
-    // Clean up Redis
+    
+
+    // Generate JWT token
+const token = jwt.sign(
+  { id: newUser._id, email: newUser.email },
+  process.env.JWT_SECRET,
+  { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+);
+
+// Clean up Redis
     await redis.del(`verify:${email}`);
 
-    res.json({ message: "User registered successfully", user: newUser });
+
+    res.json({ message: "User registered successfully", token});
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "OTP verification failed" });
