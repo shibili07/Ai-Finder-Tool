@@ -29,16 +29,17 @@ export function OTPForm({ className, ...props }) {
     e.preventDefault();
     setLoading(true);
     setStatusMsg("Verifying OTP...");
-
+    const email = localStorage.getItem("pendingEmail")
     try {
       const res = await axios.post(
         "http://localhost:5000/api/otp/verifyOtp",
-        { otp },
+        { email,otp },
         { headers: { "Content-Type": "application/json" } }
       );
 
       if (res.status === 200) {
         setStatusMsg("OTP verified successfully!");
+        localStorage.removeItem("pendingEmail");
         setTimeout(() => navigate("/login"), 1500);
       } else {
         setStatusMsg(res.data?.message || "Invalid OTP!");

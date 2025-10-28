@@ -43,10 +43,13 @@ export function SignupForm({ className, ...props }) {
       { headers: { "Content-Type": "application/json" } }
     );
 
-    // handle success
-    if (res.status === 200) {
+      // handle success
+    if (res.status === 200) {res.json({ message: "OTP sent successfully" });
       setStatusMsg("OTP has been sent to your email!");
+      // store email in localStorage or pass via state
+      localStorage.setItem("pendingEmail", res.data.email);
       setTimeout(() => navigate("/verifyOtp"), 1000);
+      
     } else {
       setStatusMsg(res.data?.message || "Signup failed!");
     }
